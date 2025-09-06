@@ -22,4 +22,8 @@ if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, () => console.log(`🚀 Local on port ${PORT}`));
 }
 
+app.get("/", (req, res) => {
+  res.json({message: "✅ Backend SMTK API is running..."});
+});
+
 module.exports = serverless(app);
