@@ -8,8 +8,16 @@ dotenv.config();
 connectDB();
 
 const app = express();
-app.use(cors());
+
 app.use(express.json({limit: "10mb"}));
+
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use("/api/auth", require("../routes/authRoutes"));
 app.use("/api/tasks", require("../routes/taskRoutes"));
