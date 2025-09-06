@@ -12,14 +12,14 @@ const protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = await User.findById(decoded.id).select("-password");
-      next();
+      return next();
     } catch (error) {
-      res.status(401).json({message: "Token tidak valid"});
+      return res.status(401).json({message: "Token tidak valid"});
     }
   }
 
   if (!token) {
-    res.status(401).json({message: "Tidak ada token, akses ditolak"});
+    return res.status(401).json({message: "Tidak ada token, akses ditolak"});
   }
 };
 
