@@ -6,17 +6,27 @@ const getTasks = async (req, res) => {
 };
 
 const createTask = async (req, res) => {
-  const {title, description, course, deadline, photoUrl} = req.body;
-  const task = await Task.create({
-    title,
-    description,
-    course,
-    deadline,
-    photoUrl,
-    userId: req.user._id,
-    status: "pending",
-  });
-  res.status(201).json(task);
+  try {
+    console.log("REQ BODY:", req.body);
+    const {title, description, course, deadline, photoUrl} = req.body;
+
+    const task = await Task.create({
+      title,
+      description,
+      course,
+      deadline,
+      photoUrl,
+      userId: req.user._id,
+      status: "pending",
+    });
+
+    console.log("TASK CREATED:", task);
+
+    res.status(201).json(task);
+  } catch (error) {
+    console.error("CREATE TASK ERROR:", error);
+    res.status(500).json({message: "Gagal membuat task"});
+  }
 };
 
 const updateTask = async (req, res) => {
