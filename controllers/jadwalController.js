@@ -1,19 +1,20 @@
 const JadwalKuliah = require("../models/Jadwal");
 
-// GET semua jadwal
 const getJadwals = async (req, res) => {
   try {
-    const jadwals = await JadwalKuliah.find();
+    const jadwals = await JadwalKuliah.find({userId: req.user.id});
     res.status(200).json(jadwals);
   } catch (error) {
     res.status(500).json({message: error.message});
   }
 };
 
-// GET jadwal by ID
 const getJadwalById = async (req, res) => {
   try {
-    const jadwal = await JadwalKuliah.findById(req.params.id);
+    const jadwal = await JadwalKuliah.findOne({
+      _id: req.params.id,
+      userId: req.user.id,
+    });
     if (!jadwal)
       return res.status(404).json({message: "Jadwal tidak ditemukan"});
     res.status(200).json(jadwal);
@@ -22,11 +23,16 @@ const getJadwalById = async (req, res) => {
   }
 };
 
-// CREATE jadwal baru
 const createJadwal = async (req, res) => {
   const {hari, mata_kuliah, dosen, jam} = req.body;
   try {
-    const jadwal = new JadwalKuliah({hari, mata_kuliah, dosen, jam});
+    const jadwal = new JadwalKuliah({
+      hari,
+      mata_kuliah,
+      dosen,
+      jam,
+      userId: req.user.id,
+    });
     await jadwal.save();
     res.status(201).json(jadwal);
   } catch (error) {
@@ -34,11 +40,10 @@ const createJadwal = async (req, res) => {
   }
 };
 
-// UPDATE jadwal
 const updateJadwal = async (req, res) => {
   try {
-    const jadwal = await JadwalKuliah.findByIdAndUpdate(
-      req.params.id,
+    const jadwal = await JadwalKuliah.findOneAndUpdate(
+      {_id: req.params.id, userId: req.user.id},
       req.body,
       {new: true}
     );
@@ -50,10 +55,12 @@ const updateJadwal = async (req, res) => {
   }
 };
 
-// DELETE jadwal
 const deleteJadwal = async (req, res) => {
   try {
-    const jadwal = await JadwalKuliah.findByIdAndDelete(req.params.id);
+    const jadwal = await JadwalKuliah.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.user.id,
+    });
     if (!jadwal)
       return res.status(404).json({message: "Jadwal tidak ditemukan"});
     res.status(200).json({message: "Jadwal berhasil dihapus"});
