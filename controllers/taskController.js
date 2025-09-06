@@ -2,25 +2,20 @@ const Task = require("../models/Task");
 
 const getTasks = async (req, res) => {
   try {
-    if (!req.user)
-      return res.status(401).json({message: "User tidak ditemukan"});
-    const tasks = await Task.find({userId: req.user._id});
-    res.json(tasks);
+    const tasks = await Task.find({userId: req.user.id});
+    res.status(200).json(tasks);
   } catch (err) {
+    console.error(err);
     res.status(500).json({message: err.message});
   }
 };
 
 const createTask = async (req, res) => {
   try {
-    if (!req.user)
-      return res.status(401).json({message: "User tidak ditemukan"});
-
     const {title, description, course, deadline, photoUrl} = req.body;
 
     if (!title) return res.status(400).json({message: "Title wajib diisi"});
 
-    // validasi deadline
     let deadlineDate = null;
     if (deadline) {
       const d = new Date(deadline);
@@ -29,16 +24,17 @@ const createTask = async (req, res) => {
       deadlineDate = d;
     }
 
-    const task = await Task.create({
+    const task = new Task({
       title,
       description: description || "",
       course: course || "",
       deadline: deadlineDate,
       photoUrl: photoUrl || "",
-      userId: req.user._id,
-      status: "pending", // tetap default pending
+      userId: req.user.id,
+      status: "pending",
     });
 
+    await task.save();
     res.status(201).json(task);
   } catch (err) {
     console.error("Error createTask:", err);
@@ -48,33 +44,51 @@ const createTask = async (req, res) => {
 
 const updateTask = async (req, res) => {
   try {
-    const task = await Task.findById(req.params.id);
+    const task = await Task.findOne({_id: req.params.id, userId: req.user.id});
     if (!task) return res.status(404).json({message: "Task tidak ditemukan"});
-    if (task.userId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({message: "Tidak diizinkan"});
-    }
 
     const updated = await Task.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
-    res.json(updated);
+    res.status(200).json(updated);
   } catch (err) {
+    console.error(err);
     res.status(500).json({message: err.message});
   }
 };
 
 const deleteTask = async (req, res) => {
   try {
-    const task = await Task.findById(req.params.id);
+    const task = await Task.findOne({_id: req.params.id, userId: req.user.id});
     if (!task) return res.status(404).json({message: "Task tidak ditemukan"});
-    if (task.userId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({message: "Tidak diizinkan"});
-    }
+
     await task.deleteOne();
-    res.json({message: "Task dihapus"});
+    res.status(200).json({message: "Task dihapus"});
   } catch (err) {
+    console.error(err);
     res.status(500).json({message: err.message});
   }
 };
 
-module.exports = {getTasks, createTask, updateTask, deleteTask};
+// Mark task selesai
+const completeTask = async (req, res) => {
+  try {
+    const task = await Task.findOne({_id: req.params.id, userId: req.user.id});
+    if (!task) return res.status(404).json({message: "Task tidak ditemukan"});
+
+    task.status = "selesai";
+    await task.save();
+    res.status(200).json(task);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({message: err.message});
+  }
+};
+
+module.exports = {
+  getTasks,
+  createTask,
+  updateTask,
+  deleteTask,
+  completeTask,
+};
