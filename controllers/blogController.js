@@ -1,4 +1,5 @@
 const Blog = require("../models/Blog");
+const cloudinary = require("../utils/cloudinary"); // pastikan sudah konfigurasi
 
 const getBlogs = async (req, res) => {
   try {
@@ -21,15 +22,41 @@ const getBlogById = async (req, res) => {
 
 const createBlog = async (req, res) => {
   try {
-    const {title, description, imageUrl} = req.body;
-    const blog = new Blog({
-      title,
-      description,
-      imageUrl,
-      userId: req.user.id,
-    });
-    await blog.save();
-    res.status(201).json(blog);
+    const {title, description} = req.body;
+    let imageUrl = "";
+
+    if (req.file) {
+      // Upload file ke Cloudinary
+      const result = await cloudinary.uploader.upload_stream(
+        {folder: "blogs"},
+        async (error, result) => {
+          if (error)
+            return res.status(500).json({message: "Gagal upload gambar"});
+
+          imageUrl = result.secure_url; // URL publik dari Cloudinary
+
+          const blog = new Blog({
+            title,
+            description,
+            imageUrl,
+            userId: req.user.id,
+          });
+
+          await blog.save();
+          res.status(201).json(blog);
+        }
+      );
+      result.end(req.file.buffer); // multer pakai memoryStorage
+    } else {
+      // Jika tidak ada gambar
+      const blog = new Blog({
+        title,
+        description,
+        userId: req.user.id,
+      });
+      await blog.save();
+      res.status(201).json(blog);
+    }
   } catch (error) {
     res.status(400).json({message: error.message});
   }
@@ -37,14 +64,39 @@ const createBlog = async (req, res) => {
 
 const updateBlog = async (req, res) => {
   try {
-    const {title, description, imageUrl} = req.body;
-    const blog = await Blog.findOneAndUpdate(
-      {_id: req.params.id, userId: req.user.id},
-      {title, description, imageUrl},
-      {new: true}
-    );
-    if (!blog) return res.status(404).json({message: "Blog tidak ditemukan"});
-    res.status(200).json(blog);
+    const {title, description} = req.body;
+    let imageUrl = req.body.imageUrl || "";
+
+    if (req.file) {
+      const result = await cloudinary.uploader.upload_stream(
+        {folder: "blogs"},
+        async (error, result) => {
+          if (error)
+            return res.status(500).json({message: "Gagal upload gambar"});
+
+          imageUrl = result.secure_url;
+
+          const blog = await Blog.findOneAndUpdate(
+            {_id: req.params.id, userId: req.user.id},
+            {title, description, imageUrl},
+            {new: true}
+          );
+
+          if (!blog)
+            return res.status(404).json({message: "Blog tidak ditemukan"});
+          res.status(200).json(blog);
+        }
+      );
+      result.end(req.file.buffer);
+    } else {
+      const blog = await Blog.findOneAndUpdate(
+        {_id: req.params.id, userId: req.user.id},
+        {title, description, imageUrl},
+        {new: true}
+      );
+      if (!blog) return res.status(404).json({message: "Blog tidak ditemukan"});
+      res.status(200).json(blog);
+    }
   } catch (error) {
     res.status(400).json({message: error.message});
   }
