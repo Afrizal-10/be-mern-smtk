@@ -24,7 +24,7 @@ const registerUser = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      token: generateToken(user), // ⬅️ kirim user, bukan user._id
+      token: generateToken(user),
     });
   } catch (error) {
     res.status(500).json({message: error.message});
@@ -40,7 +40,7 @@ const loginUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
-        token: generateToken(user), // ⬅️ kirim user
+        token: generateToken(user),
       });
     } else {
       res.status(401).json({message: "Email atau password salah"});
