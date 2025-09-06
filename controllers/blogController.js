@@ -1,5 +1,5 @@
 const Blog = require("../models/Blog");
-const cloudinary = require("../utils/cloudinary"); // pastikan sudah konfigurasi
+const cloudinary = require("../utils/cloudinary");
 
 const getBlogs = async (req, res) => {
   try {
@@ -33,8 +33,7 @@ const createBlog = async (req, res) => {
           if (error)
             return res.status(500).json({message: "Gagal upload gambar"});
 
-          imageUrl = result.secure_url; // URL publik dari Cloudinary
-
+          imageUrl = result.secure_url;
           const blog = new Blog({
             title,
             description,
@@ -46,7 +45,7 @@ const createBlog = async (req, res) => {
           res.status(201).json(blog);
         }
       );
-      result.end(req.file.buffer); // multer pakai memoryStorage
+      result.end(req.file.buffer);
     } else {
       // Jika tidak ada gambar
       const blog = new Blog({

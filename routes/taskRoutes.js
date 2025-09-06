@@ -12,7 +12,6 @@ const router = express.Router();
 
 router.route("/").get(protect, getTasks).post(protect, createTask);
 
-// Route untuk menandai task selesai (pastikan sebelum route :id)
 router.put("/:id/complete", protect, async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);

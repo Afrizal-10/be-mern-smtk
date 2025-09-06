@@ -70,7 +70,6 @@ const deleteTask = async (req, res) => {
   }
 };
 
-// Mark task selesai
 const completeTask = async (req, res) => {
   try {
     const task = await Task.findOne({_id: req.params.id, userId: req.user.id});
