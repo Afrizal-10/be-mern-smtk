@@ -7,11 +7,12 @@ const {
   updateJadwal,
   deleteJadwal,
 } = require("../controllers/jadwalController");
+const {protect} = require("../middleware/authMiddleware");
 
-router.get("/", getJadwals);
-router.get("/:id", getJadwalById);
-router.post("/", createJadwal);
-router.put("/:id", updateJadwal);
-router.delete("/:id", deleteJadwal);
+router.get("/", protect, getJadwals);
+router.get("/:id", protect, getJadwalById);
+router.post("/", protect, createJadwal);
+router.put("/:id", protect, updateJadwal);
+router.delete("/:id", protect, deleteJadwal);
 
 module.exports = router;

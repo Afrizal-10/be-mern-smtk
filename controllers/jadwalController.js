@@ -5,6 +5,7 @@ const getJadwals = async (req, res) => {
     const jadwals = await JadwalKuliah.find({userId: req.user.id});
     res.status(200).json(jadwals);
   } catch (error) {
+    console.error(error);
     res.status(500).json({message: error.message});
   }
 };
@@ -19,13 +20,17 @@ const getJadwalById = async (req, res) => {
       return res.status(404).json({message: "Jadwal tidak ditemukan"});
     res.status(200).json(jadwal);
   } catch (error) {
+    console.error(error);
     res.status(500).json({message: error.message});
   }
 };
 
 const createJadwal = async (req, res) => {
-  const {hari, mata_kuliah, dosen, jam} = req.body;
   try {
+    const {hari, mata_kuliah, dosen, jam} = req.body;
+    if (!hari || !mata_kuliah || !dosen || !jam)
+      return res.status(400).json({message: "Semua field wajib diisi"});
+
     const jadwal = new JadwalKuliah({
       hari,
       mata_kuliah,
@@ -33,9 +38,11 @@ const createJadwal = async (req, res) => {
       jam,
       userId: req.user.id,
     });
+
     await jadwal.save();
     res.status(201).json(jadwal);
   } catch (error) {
+    console.error(error);
     res.status(400).json({message: error.message});
   }
 };
@@ -52,6 +59,7 @@ const updateJadwal = async (req, res) => {
       return res.status(404).json({message: "Jadwal tidak ditemukan"});
     res.status(200).json(jadwal);
   } catch (error) {
+    console.error(error);
     res.status(400).json({message: error.message});
   }
 };
@@ -66,6 +74,7 @@ const deleteJadwal = async (req, res) => {
       return res.status(404).json({message: "Jadwal tidak ditemukan"});
     res.status(200).json({message: "Jadwal berhasil dihapus"});
   } catch (error) {
+    console.error(error);
     res.status(500).json({message: error.message});
   }
 };
