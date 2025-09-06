@@ -42,9 +42,10 @@ const createJadwal = async (req, res) => {
 
 const updateJadwal = async (req, res) => {
   try {
+    const {hari, mata_kuliah, dosen, jam} = req.body;
     const jadwal = await JadwalKuliah.findOneAndUpdate(
       {_id: req.params.id, userId: req.user.id},
-      req.body,
+      {hari, mata_kuliah, dosen, jam},
       {new: true}
     );
     if (!jadwal)

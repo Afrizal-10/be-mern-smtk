@@ -6,6 +6,7 @@ const jadwalSchema = new mongoose.Schema(
     mata_kuliah: {type: String, required: true},
     dosen: {type: String, required: true},
     jam: {type: String, required: true},
+    userId: {type: mongoose.Schema.Types.ObjectId, ref: "User", required: true},
   },
   {timestamps: true}
 );
