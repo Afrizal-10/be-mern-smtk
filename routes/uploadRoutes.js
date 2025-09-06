@@ -1,29 +1,29 @@
 const express = require("express");
 const multer = require("multer");
+const {CloudinaryStorage} = require("multer-storage-cloudinary");
 const cloudinary = require("../utils/cloudinary");
-const fs = require("fs");
 
 const router = express.Router();
-const upload = multer({dest: "uploads/"});
 
-const uploadImage = async (req, res) => {
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "tasks",
+    allowed_formats: ["jpg", "png", "jpeg", "webp"],
+  },
+});
+
+const upload = multer({storage});
+
+router.post("/", upload.single("image"), (req, res) => {
   try {
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: "tasks",
-    });
-
-    fs.unlinkSync(req.file.path);
-
     res.json({
-      url: result.secure_url,
-      public_id: result.public_id,
+      url: req.file.path,
+      public_id: req.file.filename,
     });
   } catch (err) {
-    res.status(500).json({message: "Upload gagal", error: err});
+    res.status(500).json({message: "Upload gagal", error: err.message});
   }
-};
-
-// Buat route POST upload image
-router.post("/", upload.single("image"), uploadImage);
+});
 
 module.exports = router;
